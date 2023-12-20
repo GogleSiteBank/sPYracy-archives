@@ -1,0 +1,1 @@
+# These sPYracy versions were never released (or they had less/more features,) these versions may contain expiremental features or may be buggy. Some may even cause segmentation faults or cause a spike in memory or cpu usage, use with your own caution
