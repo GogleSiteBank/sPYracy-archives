@@ -53,7 +53,116 @@ def searchSongs(query: str, maxresults=3):
     unsplit = youtube_search.YoutubeSearch(search_terms=query, max_results=maxresults).to_json()
     for i in range(maxresults):
         print("#%s: %s - ID: %s" % (i+1, unsplit.split("title\": \"")[i + 1].split("\",")[0], unsplit.split("id\": \"")[i+1].split("\", \"")[0]))
-        
+
+def downloadSong():
+    song = input("Song Name: ").encode()
+    songID = search(song=song)
+    # print("\033[38;2;0;255;100mDownloading With ID: %s" % songID)
+    download(songID)
+    prvmsg = "Downloaded song \"%s\"" % song.decode()
+def downloadSongs():
+    _songs = []
+    _songCount = int(input("Song count (int): "))
+    for _ in range(_songCount):
+        _songs.append(input("Song #%s: " % str(_ + 1)))
+    for _song in _songs:
+        download(search(_song))
+        print("Song %s/%s downloaded]" % (str(_songs.index(_song) + 1), str(_songCount)))
+def searchSongs2():
+    searchSongs(input("Song Input: "), int(input("Search Count: ")))
+def downloadID():
+    download(input("ID: "))
+def downloadIDs():
+    _songs = []
+    _songCount = int(input("Song count (int): "))
+    for _ in range(_songCount):
+        _songs.append(input("ID #%s: " % str(_ + 1)))
+    for _song in _songs:
+        download(_song)
+        print("Song %s/%s downloaded]" % (str(_songs.index(_song) + 1), str(_songCount)))
+def reverse():
+    pygame.mixer.music.unload()
+    pygame.mixer.music.load(songs[songIndex-2])
+    pygame.mixer.music.play()
+    songIndex -= 2
+def pause():
+    pygame.mixer.music.pause()
+def unpause():
+    pygame.mixer.music.unpause()
+def skip():
+    pygame.mixer.music.unload()
+    pygame.mixer.music.load(songs[songIndex])
+    pygame.mixer.music.play()
+    songIndex += 1
+def restart():
+    pygame.mixer.music.rewind()
+def exlt():
+    print("\033[39m") 
+    sys.exit()
+def seek():
+    pygame.mixer.music.set_pos(float(input("Seek position: ")))
+def queue():
+    try:
+        pygame.mixer.music.unload()
+    except: ...
+    songs.clear()
+    songIndex = 0
+    for file in filedialog.askopenfilenames():
+        songs.append(file)
+    pygame.mixer.music.load(songs[songIndex])
+    for song in songs:
+        pygame.mixer.music.queue(song) 
+    pygame.mixer.music.play()
+    songIndex += 1
+def forceSong():
+    for _index, _song in enumerate(songs) + 1:
+        print("#%s - %s" % (_index, _song))
+    pygame.mixer.music.unload()
+    pygame.mixer.music.load(songs[int(input("\nSong Number: ")) + 1])
+def changeAnimation():
+    currentAnimation = "[%s]" % ("".join(["".join(keys[0]) for i in range(3)]) + "".join(["".join(keys[1] for i in range(2))]))
+    print("\033[38;2;0;255;100m\n== Animation Changer ==\n\nCURRENT: %s\nAnimation 1: [####~~]\nAnimation 2: [###--]\nAnimation 3: [ooo--]\nAnimation 4: [ooo~~]\nAnimation 5: CUSTOM" % currentAnimation)
+    newAnimation = int(input("Input Animation (INT): "))
+    if 1 > newAnimation or newAnimation > 5:
+        print("\033[38;2;0;255;100mInvalid Option") 
+    else:
+        if 5 >= newAnimation >= 1: 
+            f = open("config.spyc", "r+")
+            content = f.read()
+            getAnimation = content.split("Animation: ")[1].split(" SPY")[0]
+            f.seek(0)
+            f.truncate()
+            keys.clear()
+            loadingAnimation = ""
+            try:
+                for l in animations[newAnimation-1]:
+                    keys.append(l)
+                loadingAnimation = animations[newAnimation-1]
+            except:
+                if debug: ...
+            if newAnimation == 5:
+                loadingAnimation = input("First part of animation (???~~): ") + input("Second part of animation (###??): ")
+                keys.clear()
+                for l in loadingAnimation:
+                    keys.append(l)
+            f.write(content.replace("Animation: " + getAnimation + " SPY", "Animation: %s SPY" % loadingAnimation))
+            print("\033[38;2;0;255;100mAnimation has been changed to: [%s]" % ("".join(["".join(keys[0]) for i in range(3)]) + "".join(["".join(keys[1] for i in range(2))])))
+            f.close()  
+def printConfig():
+    print(open("config.spyc", "r").read())
+def printValidSongsExtensions():
+    with open("config.spyc", "r") as f:
+        print(f.read().split("vExtensions: ")[1].split("SPY")[0])
+def getBusiness():
+    print(pygame.mixer.music.get_busy())
+def testSong():
+    pygame.mixer.music.load("Anthem.flac")
+    pygame.mixer.music.play()
+def songCount():
+    print(len(songs))
+def printPlaylist():
+    for _numeration, _song in enumerate(songs):
+        print("#%s: %s" % (_numeration + 1, _song))
 
 class Logger:
     def debug(self, msg):
@@ -75,6 +184,7 @@ def hook(d):
         # print(f"Downloading video... speed: {d['speed']}, time elapsed: {d['elapsed'] / 1000}, percent downloaded {float((d['downloaded_bytes'] / d['total_bytes'])) * 100}%)")
 
 def download(id: str):
+    print("Downloading With ID: %s and Title: %s" % (id, yt_dlp.YoutubeDL().extract_info(id)["title"]))
     print("\033[38;2;0;255;100m[%s]" % "".join(keys[1] for i in range(10)), end="")
     print("\033[38;2;0;255;100m\033[11D", end="")
     config = {"outtmpl": "%(title)s",
@@ -87,7 +197,6 @@ def download(id: str):
                 }
                 ],
             }
-
     yt_dlp.YoutubeDL(config).download(id)
 
 def getSongExtensions():
@@ -106,119 +215,33 @@ def executeOption(option):
         "o-",
         "o~",
     ]
-    if option == 1:
-        song = input("Song Name: ").encode()
-        songID = search(song=song)
-        print("\033[38;2;0;255;100mDownloading With ID: %s" % songID)
-        download(songID)
-        prvmsg = "Downloaded song \"%s\"" % song.decode()
-    elif option == 2:
-        _songs = []
-        _songCount = int(input("Song count (int): "))
-        for _ in range(_songCount):
-            _songs.append(input("Song #%s: " % str(_ + 1)))
-        for _song in _songs:
-            download(search(_song))
-            print("Song %s/%s downloaded]" % (str(_songs.index(_song) + 1), str(_songCount)))
-    elif option == 3:
-        searchSongs(input("Song Input: "), int(input("Search Count: ")))
-    elif option == 4:
-        download(input("ID: "))
-    elif option == 5:
-        _songs = []
-        _songCount = int(input("Song count (int): "))
-        for _ in range(_songCount):
-            _songs.append(input("ID #%s: " % str(_ + 1)))
-        for _song in _songs:
-            download(_song)
-            print("Song %s/%s downloaded]" % (str(_songs.index(_song) + 1), str(_songCount)))
-    elif option == 6:
-        pygame.mixer.music.unload()
-        pygame.mixer.music.load(songs[songIndex-2])
-        pygame.mixer.music.play()
-        songIndex -= 2
-    elif option == 7:
-        pygame.mixer.music.pause()
-    elif option == 8:
-        pygame.mixer.music.unpause()
-    elif option == 9:
-        pygame.mixer.music.unload()
-        pygame.mixer.music.load(songs[songIndex])
-        pygame.mixer.music.play()
-        songIndex += 1
-    elif option == 10:
-        pygame.mixer.music.rewind()
-    elif option == 11:
-        print("\033[39m") 
-        sys.exit()
-    elif option == 12:
-        pygame.mixer.music.set_pos(float(input("Seek position: ")))
-
-    elif option == 13:
-        try:
-            pygame.mixer.music.unload()
-        except: ...
-        songs.clear()
-        songIndex = 0
-        for file in filedialog.askopenfilenames():
-            songs.append(file)
-        pygame.mixer.music.load(songs[songIndex])
-        for song in songs:
-          pygame.mixer.music.queue(song) 
-        pygame.mixer.music.play()
-        songIndex += 1
-    elif option == 14:
-        for _index, _song in enumerate(songs) + 1:
-            print("#%s - %s" % (_index, _song))
-        pygame.mixer.music.unload()
-        pygame.mixer.music.load(songs[int(input("\nSong Number: ")) + 1])
-    elif option == 15:
-        currentAnimation = "[%s]" % ("".join(["".join(keys[0]) for i in range(3)]) + "".join(["".join(keys[1] for i in range(2))]))
-        print("\033[38;2;0;255;100m\n== Animation Changer ==\n\nCURRENT: %s\nAnimation 1: [####~~]\nAnimation 2: [###--]\nAnimation 3: [ooo--]\nAnimation 4: [ooo~~]\nAnimation 5: CUSTOM" % currentAnimation)
-        newAnimation = int(input("Input Animation (INT): "))
-        if 1 > newAnimation or newAnimation > 5:
-            print("\033[38;2;0;255;100mInvalid Option") 
-        else:
-            if 5 >= newAnimation >= 1: 
-                f = open("config.spyc", "r+")
-                content = f.read()
-                getAnimation = content.split("Animation: ")[1].split(" SPY")[0]
-                f.seek(0)
-                f.truncate()
-                keys.clear()
-                loadingAnimation = ""
-                try:
-                    for l in animations[newAnimation-1]:
-                        keys.append(l)
-                    loadingAnimation = animations[newAnimation-1]
-                except:
-                    if debug: ...
-                if newAnimation == 5:
-                    loadingAnimation = input("First part of animation (???~~): ") + input("Second part of animation (###??): ")
-                    keys.clear()
-                    for l in loadingAnimation:
-                        keys.append(l)
-                f.write(content.replace("Animation: " + getAnimation + " SPY", "Animation: %s SPY" % loadingAnimation))
-                print("\033[38;2;0;255;100mAnimation has been changed to: [%s]" % ("".join(["".join(keys[0]) for i in range(3)]) + "".join(["".join(keys[1] for i in range(2))])))
-                f.close()  
-    elif option == 16:
-        print(open("config.spyc", "r").read())
-    elif option == 17:
-        with open("config.spyc", "r") as f:
-            print(f.read().split("vExtensions: ")[1].split("SPY")[0])
-    elif option == 18:
-        print(pygame.mixer.music.get_busy())
-    elif option == 19:
-        pygame.mixer.music.load("Anthem.flac")
-        pygame.mixer.music.play()
-    elif option == 20:
-        print(len(songs))
-    elif option == 21:
-        for _numeration, _song in enumerate(songs):
-            print("#%s: %s" % (_numeration + 1, _song))
-    elif option == 22:
-        previewOptions()
-    else:
+    options = [
+        downloadSong,
+        downloadSongs,
+        searchSongs2,
+        downloadID,
+        downloadIDs,
+        reverse,
+        pause,
+        unpause,
+        skip,
+        restart,
+        exlt,
+        seek,
+        queue,
+        forceSong,
+        changeAnimation,
+        printConfig,
+        printValidSongsExtensions,
+        getBusiness,
+        testSong,
+        songCount,
+        printPlaylist,
+        previewOptions
+    ]
+    try:
+        options[option - 1]() 
+    except:
         print("\033[38;2;0;255;100mThis option does not exist!")
     previewOptions(prvmsg)
 

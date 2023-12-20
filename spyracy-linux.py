@@ -1,14 +1,14 @@
 import youtube_search
 import yt_dlp
-import os; os.system("")
+import os
 from tkinter import filedialog
 import sys
 sys.stdout = open(os.devnull, "w").close()
 import pygame
 sys.stdout = sys.__stdout__
-del os 
+del os
 
-print("\033[38;2;0;255;100msPYracy   for Windows   is loading...")
+print("\033[38;2;0;255;100msPYracy   for Linux  is loading...")
 version = "BETA Release 2"
 import requests
 rawApp = "https://raw.githubusercontent.com/GogleSiteBank/sPYracy-TUI/main/.ver"
@@ -18,6 +18,7 @@ try:
     # nest moment :skull: 
 except: print("Couldn't locate sPYracy's latest version, are we offline?  ")
 del requests
+
 
 songs = []
 pygame.mixer.init()
@@ -223,8 +224,7 @@ def executeOption(option):
     previewOptions(prvmsg)
 
 def previewOptions(previewmessage=None):
-    print("\033[38;2;0;255;100m\nsPYracy   for Windows   - %s" % version)
- 
+    print("\033[38;2;0;255;100m\nsPYracy   for Linux   - %s" % version)
     DownSearch = [
         "Download Song   (1)",
         "Download multiple songs   (2)",
@@ -261,7 +261,7 @@ def previewOptions(previewmessage=None):
         "Debugging "
     ]
     intToSection = {
-        1: DownSearch,
+        1 : DownSearch,
         2: Controls,
         3: Debugs
     }
